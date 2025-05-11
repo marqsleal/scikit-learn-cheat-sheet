@@ -1,76 +1,67 @@
 # Machine Learning Cheat Sheet - Scikit-Learn
-Cheat Sheet da biblioteca Scikit-Learn.
+Cheat Sheet da biblioteca [Scikit-Learn](https://scikit-learn.org/stable/).
 
-# `sklearn.preprocessing` - Data Pre-Processing:
-Pré-processamento dos dados.
+# 1. Data Pre-Processing - `sklearn.preprocessing`: 
 
-## `StandardScaler`
-Padroniza features numéricas removendo a média e escalando para a unidade de variância. É recomendando quando a feature possui uma distribuição aproximadamente Gaussiana (normal)  
-
+## 1.1 `StandardScaler`:
+Padroniza features numéricas removendo a média e escalando para a unidade de variância.  
 
 **Código**:
 ```python
 from sklearn.preprocessing import StandardScaler
 
-scaler = StandardScaler().fit(X_train)
-X_train_standardized = scaler.transform(X_train)
-X_test_standardized = scaler.transform(X_test)
+data = [[0, 0], [0, 0], [1, 1], [1, 1]]
+
+scaler = StandardScaler()
+
+scaler.fit(data)
+
+print(scaler.mean_)
+# [0.5 0.5]
+
+print(scaler.transform(data))
+# [[-1. -1.]
+#  [-1. -1.]
+#  [ 1.  1.]
+#  [ 1.  1.]]
+
+print(scaler.transform([[2, 2]]))
+#[[3. 3.]]
 ```
 
-## `MinMaxScaler`
-Escala as features numéricas para um range específico. É recomendando quando a feature não possui uma distribuição normal  
+**Casos de Uso**:
+ - Quando a feature possui uma distribuição aproximadamente Gaussiana (normal). 
+
+## 1.2 `MinMaxScaler`:
+Escala as features numéricas para um range específico. 
 
 **Código**:
 ```python
-from sklearn.preprocessing import Normalizer
-scaler = Normalizer().fit(X_train)
-X_train_normalized = scaler.transform(X_train)
-X_test_normalized = scaler.transform(X_test)
+from sklearn.preprocessing import MinMaxScaler
+
+data = [[-1, 2], [-0.5, 6], [0, 10], [1, 18]]
+
+scaler = MinMaxScaler()
+
+scaler.fit(data)
+
+print(scaler.data_max_)
+# [ 1. 18.]
+
+print(scaler.transform(data))
+# [[0.   0.  ]
+#  [0.25 0.25]
+#  [0.5  0.5 ]
+#  [1.   1.  ]]
+
+print(scaler.transform([[2, 2]]))
+# [[1.5 0. ]]
 ```
 
-## Bonus: Checando se os dados são uma distribuição normal ou não
-**Histograma**:
-```python
-import matplotlib.pyplot as plt
+**Casos de Uso**:
+ - Quando a feature não possui uma distribuição normal.  
 
-plt.hist(data, bins=30)
-plt.title('Histograma dos dados')
-plt.xlabel('Valor')
-plt.ylabel('Frequência')
-plt.show()
-```
-Caso o gráfico se assemelhe a um sino (Gaussiana), a distribuição dos dados é normal.
-
-**Testes Estatísticos de normalidade**:
-```python
-from scipy import stats
-
-stat, p = stats.shapiro(data)
-print(f'Shapiro–Wilk: estatística={stat:.4f}, p-valor={p:.4f}')
-```
- - Recomendado para pequenas amostras
- - [Shapiro-Wilk: É rejeitado caso p seja maior que `0.05`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.shapiro.html)
-
-```python
-from scipy import stats
-
-res = stats.anderson(data, dist='norm')
-print(f'Anderson–Darling: estatística={res.statistic:.4f}')
-print('Valores críticos e níveis de significância:')
-for sl, cv in zip(res.significance_level, res.critical_values):
-    print(f'  {sl}% → {cv:.3f}')
-```
- - [Anderson–Darling: Compara p com valores críticos](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.anderson.html)
-
-```python
-from scipy import stats
-
-stat, p = stats.normaltest(data)
-print(f"D’Agostino–Pearson: estatística={stat:.4f}, p-valor={p:.4f}")
-```
- - [D’Agostino–Pearson: Teste omnibus que combina skewness e kurtosis](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.normaltest.html)
-
-## `Binarizer`
+## 1.3 `Binarizer`:
 `Binarizer` binariza os dados de acordo com o `threshold` escolhid.
 
 ```python
@@ -95,7 +86,7 @@ transformer.transform(X)
  - Criação de features booleanas.
  - Preparação de dados para modelos de classificação.
 
-## `LabelEncoder`
+## 1.4: `LabelEncoder`:
 Realiza o encoding da feature com valores entre 0 e n. classes - 1.
 ```python
 from sklearn.preprocessing import LabelEncoder
@@ -116,7 +107,7 @@ list(le.inverse_transform([2, 2, 1]))
  - Variáveis de Entrada (X), arvores de decisão e random forests podem lidar diretamente com inteiros sem supor ordenação
  - Alto número de classes
 
-## `OneHotEncoder`
+## 1.4 `OneHotEncoder`:
 Realiza o encoding de uma feature categórica em array numérico one-hot 
 ```python
 from sklearn.preprocessing import OneHotEncoder
@@ -143,7 +134,7 @@ enc.get_feature_names_out(['gender', 'group'])
  - Variáveis de Entrada (X), modelos lineares e SVMs esperam features ortogonais, 
  - Alto número de classes
 
-## `PolynomialFeatures`
+## 1.5 `PolynomialFeatures`:
 `PolynomialFeatures` é um pré-processador que gera uma nova matriz de características contendo todas as combinações polinomiais de variáveis de entrada até um grau especificado (`degree`).
 **Parametros Relevantes**:
  - `degree`: do tipo int ou tupla (`min_degree`, `max_degree`). Valor padrão: `2`.
@@ -183,10 +174,9 @@ poly.fit_transform(X)
  - Potências elevadas podem induzir alta correlação entre colunas.
  - Escalar antes de elevar o grau evita dominância numérica de grandes valores.
 
-# `sklearn.imputer` - Data Imputers:
-Imputação de dados.
+# 2. Data Imputers - `sklearn.imputer`:
 
-## `SimpleImputer`
+## 2.1 `SimpleImputer`:
 `SimpleImputer` imputa aos campos ausentes nas colunas os dados referentes a estratégia (`strategy`) passada na construção do objeto.
 **Parametros Relevantes**:
  - `strategy`: tipo string, escolha da estratégia utilizada na imputação dos dados, sendo estes a média (`mean`), a mediana (`median`), a moda (`most_frequent`), etc. Valor Padrão: `mean` 
@@ -212,7 +202,7 @@ print(imp_mean.transform(X))
  - `most_frequent`: adequado para variáveis categóricas ou para preservar as categorias mais comuns em variáveis numéricas com distribuição multimodal.
  - `constant`: indicado quando se conhece previamente o valor de substituição apropriado (por exemplo, 0, “Desconhecido” ou outro placeholder), ou quando se deseja sinalizar explicitamente as imputações.
 
-## `KNNImputer`
+## 2.2 `KNNImputer`:
 `KNNImputer` implementa uma técnica de imputação multivariada que utiliza o valor médio (ou outro estatístico) dos *k* vizinhos mais próximos para preencher valores ausentes, preservando estruturas locais e relações entre características.
 
 **Parametros Relevantes**:
@@ -245,19 +235,19 @@ imputer.fit_transform(X)
  - Imputação em grandes bases pode afetar a performance da pipeline.
  - Se muitos valores estiverem ausentes, podem não haver vizinhos o suficiente.
 
-#  Dimentionality Reduction:
+#  3. Dimentionality Reduction:
 
-## `sklearn.decomposition.PCA` - PCA
+## 3.1 PCA - `sklearn.decomposition.PCA`:
 
-## `sklearn.decomposition.TruncatedSVD` - TruncatedSVD
+## 3.2 TruncatedSVD - `sklearn.decomposition.TruncatedSVD`: 
 
-## `sklearn.manifold.TSNE` - t-SNE
+## 3.3 t-SNE - `sklearn.manifold.TSNE`: 
 
-## `sklearn.manifold.FeatureAgglomeration` - FeatureAgglomeration
+## 3.4 FeatureAgglomeration - `sklearn.manifold.FeatureAgglomeration`: 
 
-# `sklearn.model_selection` - Model Selection:
+# 4. Model Selection - `sklearn.model_selection`:
 
-## `train_test_split`
+## 4.1 `train_test_split`
 `train_test_split` divide arrays, matrizes ou dataframes em amostras aleatórias de train e teste. Utilizado em estimadores supervisionados.
 **Parametros Relevantes**:
  - `*arrays`: Arrays de input. Sendo lists, Arrays Numpy, Matrizes Scipy-Sparce ou Dataframes Pandas 
@@ -280,35 +270,34 @@ X_train, X_test, y_train, y_test = train_test_split(
 **Casos de Uso**:
  - Sempre que você estiver trabalhando com dados reais e precisa fazer a separação das features de treino e deste de modelos supervisionados.
 
-## `cross_val_score`
+## 4.2 `cross_val_score`:
 
-## `cross_val_predict`
+## 4.3 `cross_val_predict`:
 
-# `sklearn.metrics` - Model Metrics:
+# 5. Model Metrics - `sklearn.metrics`:
 Métricas dos modelos.
 
-## `accuracy_score`
+## 5.1 `accuracy_score`:
 
-## `confusion_matrix`
+## 5.2 `confusion_matrix`:
 
-## `classification_report`
+## 5.3 `classification_report`:
 
-## `mean_squared_error`
+## 5.4 `mean_squared_error`:
 
-## `r2_score`
+## 5.5 `r2_score`:
 
-## `roc_auc_score`
+## 5.6 `roc_auc_score`:
 
-## `f1_score`
+## 5.7 `f1_score`:
 
-## `precision_score`
+## 5.8 `precision_score`:
 
-## `recall_score`
+## 5.9 `recall_score`:
 
+# 6. `Pipeline`:
+`Pipeline` permite que você aplique sequêncialmente uma lista de transformadores para pre-processar os dados. `Pipeline` pode ser usado como um estimador, evitando vazamento de dados entre as porções de teste e de treinamento.  
 
-
-# `Pipeline`
-`Pipeline` permite que você aplique sequêncialmente uma lista de transformadores para pre-processar os dados. `Pipeline` pode ser usado como um estimador, evitando vazamento de dados entre as porções de teste e de treinamento.
 **Parametros Relevantes**:
  - `steps`: Uma lista de tuplas contendo uma string com o nome do passo, um estimador, podendo até conter as features.
 
@@ -351,9 +340,9 @@ y_pred = pipeline.predict(X_test)
 y_prob = pipeline.predict_proba(X_test)[:, 1]
 ```
 
-# Classification Models
+# 7. Classification Models
 
-# Regression Models
+# 8. Regression Models
 
-# Clustering Models
+# 9. Clustering Models
 
