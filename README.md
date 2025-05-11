@@ -6,17 +6,7 @@ Pré-processamento dos dados.
 
 ## `StandardScaler`
 Padroniza features numéricas removendo a média e escalando para a unidade de variância. É recomendando quando a feature possui uma distribuição aproximadamente Gaussiana (normal)  
-**Fórmula**:
 
-$
-z_i = \frac{x_i - \mu}{\sigma}
-$
-
-Onde:
- - $x_i$: Valor Original 
- - $\mu$: Média da Amostra  
- - $\sigma$: Desvio Padrão da Amostra  
- - $z_i$: Valor Padronizado  
 
 **Código**:
 ```python
@@ -29,17 +19,6 @@ X_test_standardized = scaler.transform(X_test)
 
 ## `MinMaxScaler`
 Escala as features numéricas para um range específico. É recomendando quando a feature não possui uma distribuição normal  
-**Fórmula**:
-
-$
-x'_i = \frac{x_i - x_{\text{min}}}{x_{\text{max}} - x_{\text{min}}}
-$
-
-Onde:
- - $x_i$: Valor Original 
- - $x_{\text{min}}$: Menor Valor da Amostra  
- - $x_{\text{max}}$: Maior Valor da Amostra  
- - $x'_i$: Valor Normalizado no inervalor [0, 1]  
 
 **Código**:
 ```python
