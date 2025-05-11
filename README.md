@@ -245,7 +245,76 @@ imputer.fit_transform(X)
 
 #  3. Dimentionality Reduction:
 
-## 3.1 PCA - `sklearn.decomposition.PCA`:
+## 3.1 PCA - `sklearn.decomposition.PCA`:  
+`PCA` (Analise de Componentes Principais) é uma técnica de redução de dimensionalidade linear que projeta um conjunto de dados em um de menor dimensão, preservando ao máximo a variância original dos dados. Ele funciona centralizando as variáveis, calculando os autovetores e autovalores da matriz de covariância (ou equivalentes via SVD) e ordenando esses componentes pelo quanto explicam da variância total. 
+
+**Parâmetros Relevantes**:
+ - `n_components`: Número de componentes principais a reter; pode ser inteiro, fração de variância explicada ou `None` (retém todos). Valor padrão: `None`.
+ - `svd_solver`: Estratégia para computar a SVD (`auto`, `full`, `arpack`, `randomized`) permitindo balanço entre precisão e performance. Valor padrão: `auto`.
+ - `whiten`: Se `True`, divide cada componente pelo seu desvio padrão, garantindo variância unitária, útil em alguns pipelines de preprocessing. Valor padrão: `False`.
+
+```python
+import numpy as np
+from sklearn.decomposition import PCA
+
+X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
+
+pca = PCA(n_components=2)
+
+pca.fit(X)
+
+print(pca.explained_variance_ratio_)
+# [0.9924... 0.0075...]
+
+print(pca.singular_values_)
+# [6.30061... 0.54980...]
+```
+
+**Como escolher o `n_componentes`**:  
+Plotando a variância acumulada explicada em função do número de componentes e identificando o "joelho" da curva, escolhendo o menor *k*.
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+
+pca = PCA().fit(X)
+plt.plot(np.cumsum(pca.explained_variance_ratio_))
+plt.xlabel('Número de componentes')
+plt.ylabel('Variância acumulada explicada')
+plt.show()
+```
+
+**Como escolher o `svd_solver`**:  
+ - Pequenos datasets: `full` ou `auto`.
+ - Grandes datasets densos: `randomized`.
+ - Dados Esparços: `arcpack`.
+ - Melhor performance de execução: `randomized`.
+
+**`GridSearchCV` para `PCA`**:
+```python
+from sklearn.decomposition import PCA
+from sklearn.model_selection import GridSearchCV
+
+param_grid = {
+    'n_components': [0.90, 0.95, 0.99],           # Em frações de variância
+    'svd_solver': ['auto', 'full', 'randomized']
+}
+pca = PCA()
+grid = GridSearchCV(pca, param_grid, cv=5, scoring='explained_variance')
+grid.fit(X)
+print("Melhor combo:", grid.best_params_)
+```
+
+**Casos de Uso**:
+ - Quando há muitas variáveis correlacionadas, o PCA concentra a maior parte da informação nos primeiros componentes, reduzindo redundâncias.
+ - Diminuir o número de recursos pode ajudar a simplificar o modelo e evitar ajustar ruídos, especialmente em casos de poucos dados relativos ao número de variáveis.
+ - Para explorar e visualizar dados de alta dimensão em 2D ou 3D, mantendo o máximo de variância possível nas projeções iniciais.
+ - Em pipelines de machine learning, reduzir dimensionalidade pode acelerar algoritmos posteriores (p.ex., SVM, redes neurais) e melhorar estabilidade numérica.
+
+**Pontos de Atenção**:
+ - PCA captura apenas relações lineares; se a estrutura dos dados for não linear, considere métodos como t-SNE ou UMAP.
+ - É recomendável padronizar (z-score) as variáveis antes de aplicar PCA caso tenham escalas muito diferentes.
+ - Componentes principais são combinações lineares de variáveis originais e podem ser menos interpretáveis em termos de significado físico, exigindo análise cuidadosa dos loadings.
 
 ## 3.2 TruncatedSVD - `sklearn.decomposition.TruncatedSVD`: 
 
