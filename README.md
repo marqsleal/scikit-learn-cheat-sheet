@@ -317,10 +317,150 @@ print("Melhor combo:", grid.best_params_)
  - Componentes principais são combinações lineares de variáveis originais e podem ser menos interpretáveis em termos de significado físico, exigindo análise cuidadosa dos loadings.
 
 ## 3.2 TruncatedSVD - `sklearn.decomposition.TruncatedSVD`: 
+`TruncatedSVD` é uma técnica de redução de dimensionalidade que aplica **Decomposição de Valores Singulares** de forma truncada, preservando apenas os maiores valores singulares para aproximar a matriz original com o menor posto. Ao contrário do `PCA`, o `TruncatedSVD` não centraliza os dados, o que o torna mais eficiente em matrizes esparsas. 
+
+**Parâmetros Relevantes**:
+ - `n_components`: número (inteiro) de componentes singulares a manter; controla a redução de dimensionalidade . Valor padrão: `2`.
+ - `algorithm`: Estratégia para computar a SVD (`arpack`, `randomized`) permitindo balanço entre precisão e performance. Valor padrão: `randomized`.
+ - `n_iter`: Número de iterações (inteiro) para um SVD randomizado resolver. Valor padrão: `5`.
+
+```python
+from sklearn.decomposition import TruncatedSVD
+from scipy.sparse import csr_matrix
+import numpy as np
+
+np.random.seed(0)
+
+X_dense = np.random.rand(100, 100)
+
+X_dense[:, 2 * np.arange(50)] = 0
+
+X = csr_matrix(X_dense)
+
+svd = TruncatedSVD(n_components=5, n_iter=7, random_state=42)
+
+svd.fit(X)
+
+print(svd.explained_variance_ratio_)
+# [0.0157... 0.0512... 0.0499... 0.0479... 0.0453...]
+
+print(svd.explained_variance_ratio_.sum())
+# 0.2102...
+
+print(svd.singular_values_)
+# [35.2410...  4.5981...   4.5420...  4.4486...  4.3288...]
+```
+
+**Casos de Uso**:
+ - O TruncatedSVD é a técnica subjacente ao Latent Semantic Analysis (LSA), usado para reduzir dimensões de matrizes de contagem de termos ou TF–IDF em tarefas de recuperação de informação e análise de texto.
+ - Para datasets com milhares de variáveis e amostras, o algoritmo randomized acelera consideravelmente a decomposição, economizando tempo e memória em ambientes de produção ou pesquisa exploratória.
+ - Se os dados não forem esparsos e puderem ser centralizados sem estourar memória, o PCA pode ser preferível por oferecer componentes interpretáveis em termos de variância total centrada.
 
 ## 3.3 t-SNE - `sklearn.manifold.TSNE`: 
+`t-SNE` (t-distributed Stochastic Neighbor Embedding) é uma técnica não supervisionada de redução de dimensionalidade não linear para exploração de dados e visualização de dados de alta dimensão. A redução não linear da dimensionalidade significa que o algoritmo nos permite separar dados que não podem ser separados por uma linha reta. Devido à natureza não convexa de sua função de custo e à complexidade quadrática em número de amostras, o t-SNE costuma ser empregado em conjuntos de tamanho moderado (tipicamente até algumas dezenas de milhares de pontos) e **não é recomendado para pré-processamento de features em modelos de produção**, mas sim para exploração e apresentação de clusters e estruturas latentes nos dados. 
+
+**Parâmetros Relevantes**:
+ - `n_components`: número (inteiro) de dimensões de saída. Valor padrão: `2`.
+ - `perplexity`:  Controla o número efetivo de vizinhos (float), tipicamente entre 5 e 50; afeta a granularidade do embutimento. Valor padrão: `30.0`.
+ - `learning_rate`: passo do gradiente, deve ser da ordem de *O(n)* ou ajustado empiricamente; valores muito baixos ou muito altos prejudicam a convergência. Valor padrão: `auto`.
+ - `n_iter`: número de iterações de otimização; recomenda-se ao menos 250 iterações de “queima” (early exaggeration) e 750 de ajuste fino. Valor padrão: `1000`.
+
+```python
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+
+tsne = TSNE(
+    n_components=2,
+    perplexity=30,
+    learning_rate=200,
+    n_iter=1000,
+    random_state=42
+)
+X_embedded = tsne.fit_transform(X)
+
+plt.scatter(X_embedded[:,0], X_embedded[:,1], c=labels, s=5)
+plt.title("t-SNE embedding")
+plt.xlabel("Dimensão 1")
+plt.ylabel("Dimensão 2")
+plt.show()
+```
+
+**Casos de Uso**:
+ - Em uma visualização exploratória, revelar clusters e manifolds em dados de visão computacional, genômica, NLP ou outros domínios de alta dimensão.
+ - Para validar features, verificando se embeddings (e.g., Word2Vec, autoencoders) capturam grupos semânticos ou estruturas latentes antes de modelos supervisados.
+ - Para demonstrações e apresentações, gerando gráficos 2D/3D intuitivos que destacam seperações de classes ou agrupamentos naturais.
 
 ## 3.4 FeatureAgglomeration - `sklearn.manifold.FeatureAgglomeration`: 
+`FeatureAgglomeration` é uma técnica de redução de dimensionalidade que aplica **clustering hierárquico** às features de um conjunto de dados, agrupando características que se comportam de forma semelhante em clusters, e agrega os valores de cada clusters por meio de uma função de pooling (por padrão, a média). 
+
+**Parâmetros Relevantes**:
+ - `n_clusters`: número de clusters finais de features (ou usar `distance_threshold` para determinar automaticamente). Valor Padrão: `2`. 
+ - `linkage`: critério de fusão de clusters (“ward”, “complete”, “average”, “single”). Valor Padrão: `ward`. 
+ - `metric`: métrica de distância entre features: “euclidean”, “manhattan”, “cosine” etc. Valor Padrão: `euclidean`. 
+
+```python
+import numpy as np
+from sklearn import datasets, cluster
+
+digits = datasets.load_digits()
+
+images = digits.images
+
+X = np.reshape(images, (len(images), -1))
+
+agglo = cluster.FeatureAgglomeration(n_clusters=32)
+
+agglo.fit(X)
+
+X_reduced = agglo.transform(X)
+
+X_reduced.shape
+# (1797, 32)
+```
+
+**Escolhendo os melhores parametros**:
+```python
+import numpy as np
+from sklearn.cluster import FeatureAgglomeration
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import ParameterGrid
+from sklearn.metrics import accuracy_score
+
+# Definindo hiperparâmetros
+param_grid = {
+    'n_clusters': [2, 5, 10, 20],
+    'linkage': ['ward', 'complete', 'average'],
+    'metric': ['euclidean', 'manhattan', 'cosine'],
+}
+
+results = []
+for params in ParameterGrid(param_grid):
+    # Ajuste e transforma
+    agglo = FeatureAgglomeration(
+        n_clusters=params['n_clusters'],
+        linkage=params['linkage'],
+        metric=params['metric']
+    )
+    X_tr = agglo.fit_transform(X_train)
+    X_te = agglo.transform(X_test)
+    
+    # Treinando classificador
+    clf = RandomForestClassifier(random_state=42)
+    clf.fit(X_tr, y_train)
+    
+    # Avaliando teste
+    score = accuracy_score(y_test, clf.predict(X_te))
+    results.append({**params, 'accuracy': score})
+
+# Selecionando a melhor configuração
+best = max(results, key=lambda x: x['accuracy'])
+print("Melhor configuração:", best)
+```
+
+**Casos de Uso**:
+ - Datasets com alta correlações de features, agrupando variáveis redundantes, reduzindo multicolinearidade e simplificando modelos.
+ - Dados estruturados espacialmente, como imagens, sinais, utilizando a conectividade para agrupar pixels ou sensores próximos.
+ - Em pré-processamento de pipelines para diminuir número de features para acelerar algorítimos custosos, como SVM ou redes neurais, sem perder padrões importantes.
 
 # 4. Model Selection - `sklearn.model_selection`:
 
