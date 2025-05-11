@@ -1,6 +1,12 @@
 # Machine Learning Cheat Sheet - Scikit-Learn
 Cheat Sheet da biblioteca [Scikit-Learn](https://scikit-learn.org/stable/).
 
+# Instalando
+
+```bash
+pip install scikit-learn
+```
+
 # 1. Data Pre-Processing - `sklearn.preprocessing`: 
 
 ## 1.1 `StandardScaler`:
@@ -135,8 +141,9 @@ enc.get_feature_names_out(['gender', 'group'])
  - Alto número de classes
 
 ## 1.5 `PolynomialFeatures`:
-`PolynomialFeatures` é um pré-processador que gera uma nova matriz de características contendo todas as combinações polinomiais de variáveis de entrada até um grau especificado (`degree`).
-**Parametros Relevantes**:
+`PolynomialFeatures` é um pré-processador que gera uma nova matriz de características contendo todas as combinações polinomiais de variáveis de entrada até um grau especificado (`degree`).  
+
+**Parâmetros Relevantes**:
  - `degree`: do tipo int ou tupla (`min_degree`, `max_degree`). Valor padrão: `2`.
  - `interaction_only`: tipo booleano, gera termos de interação de variáveis dinstintas apenas, excluindo potenciais maiores que 1 de uma mesma variável. Valor Padrão: `False` 
  - `include_bias`: tipo booleano, inclui uma coluna constante de valores. Valor Padrão: `True`
@@ -177,8 +184,9 @@ poly.fit_transform(X)
 # 2. Data Imputers - `sklearn.imputer`:
 
 ## 2.1 `SimpleImputer`:
-`SimpleImputer` imputa aos campos ausentes nas colunas os dados referentes a estratégia (`strategy`) passada na construção do objeto.
-**Parametros Relevantes**:
+`SimpleImputer` imputa aos campos ausentes nas colunas os dados referentes a estratégia (`strategy`) passada na construção do objeto.  
+
+**Parâmetros Relevantes**:
  - `strategy`: tipo string, escolha da estratégia utilizada na imputação dos dados, sendo estes a média (`mean`), a mediana (`median`), a moda (`most_frequent`), etc. Valor Padrão: `mean` 
 ```python
 import numpy as np
@@ -203,9 +211,9 @@ print(imp_mean.transform(X))
  - `constant`: indicado quando se conhece previamente o valor de substituição apropriado (por exemplo, 0, “Desconhecido” ou outro placeholder), ou quando se deseja sinalizar explicitamente as imputações.
 
 ## 2.2 `KNNImputer`:
-`KNNImputer` implementa uma técnica de imputação multivariada que utiliza o valor médio (ou outro estatístico) dos *k* vizinhos mais próximos para preencher valores ausentes, preservando estruturas locais e relações entre características.
+`KNNImputer` implementa uma técnica de imputação multivariada que utiliza o valor médio (ou outro estatístico) dos *k* vizinhos mais próximos para preencher valores ausentes, preservando estruturas locais e relações entre características.  
 
-**Parametros Relevantes**:
+**Parâmetros Relevantes**:
  - `n_neighbors`: tipo int, número de *k* vizinhos a considerar na imputação. Valor padrão: `5`.
  - `weights`: tipo string, critério de ponderação, `uniform` tratando todos como iguais, `distance` mais peso aos mais próximos. Valor Padrão: `uniform`.
 
@@ -248,8 +256,9 @@ imputer.fit_transform(X)
 # 4. Model Selection - `sklearn.model_selection`:
 
 ## 4.1 `train_test_split`
-`train_test_split` divide arrays, matrizes ou dataframes em amostras aleatórias de train e teste. Utilizado em estimadores supervisionados.
-**Parametros Relevantes**:
+`train_test_split` divide arrays, matrizes ou dataframes em amostras aleatórias de train e teste. Utilizado em estimadores supervisionados.  
+
+**Parâmetros Relevantes**:
  - `*arrays`: Arrays de input. Sendo lists, Arrays Numpy, Matrizes Scipy-Sparce ou Dataframes Pandas 
  - `test_size`: Porcentagem da amostra de testes, variando de `0.00` a `1.00`. Valor Padrão: `0.25` 
  - `train_size`: Porcentagem da amostra de treino, variando de `0.00` a `1.00`. Valor Padrão: complementar ao `test_size`
@@ -296,9 +305,9 @@ Métricas dos modelos.
 ## 5.9 `recall_score`:
 
 # 6. `Pipeline`:
-`Pipeline` permite que você aplique sequêncialmente uma lista de transformadores para pre-processar os dados. `Pipeline` pode ser usado como um estimador, evitando vazamento de dados entre as porções de teste e de treinamento.  
+`Pipeline` permite que você aplique sequêncialmente uma lista de transformadores para pre-processar os dados. `Pipeline` pode ser usado como um estimador, evitando vazamento de dados entre as porções de teste e de treinamento.    
 
-**Parametros Relevantes**:
+**Parâmetros Relevantes**:
  - `steps`: Uma lista de tuplas contendo uma string com o nome do passo, um estimador, podendo até conter as features.
 
 ```python
